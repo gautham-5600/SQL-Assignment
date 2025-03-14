@@ -89,6 +89,51 @@ select department_id, employee_id, salary,
 sum(salary) over (partition by department_id order by hire_date) as total_sal
 from hr.employees
 
+-- 19. Find the employees who earn above the average salary of their department.
+-- Uses a subquery to filter employees earning above department average.
+select department_id, employee_id, salary 
+from hr.employees 
+where salary > (
+    select avg(salary) from hr.employees
+)
+
+-- 20. Rank employees within their department based on experience.
+-- Uses RANK() to order employees by hire date per department.
+select employee_id, department_id, hire_date, 
+rank() over (partition by department_id order by hire_date asc) as hire_rank
+from hr.employees
+
+-- 21. Find the difference between each employee’s salary and the department average.
+-- Uses AVG() OVER() to compute salary difference from department average.
+select employee_id, department_id, salary, 
+avg(salary) over (partition by department_id) as sal_diff
+from hr.employees
+
+-- 22. Find the department where the most employees have been hired.
+-- Counts employees in each department and selects the highest.
+select department_id, count(*) as total_hired
+from hr.employees 
+group by department_id
+order by total_hired desc
+fetch first 1 row only
+
+-- 23. Identify employees who were hired in the same month and year as someone else.
+-- Uses COUNT() OVER() to count employees hired in the same month-year.
+select employee_id, hire_date, 
+       count(*) over (partition by extract(month from hire_date), extract(year from hire_date)) as same_month_hires
+from hr.employees;
+
+-- 24. Calculate the moving average salary over the last 3 employees ordered by hire date.
+-- Uses AVG() OVER() with ROWS BETWEEN for moving average calculation.
+select employee_id, hire_date, salary, 
+       avg(salary) over (order by hire_date rows between 2 preceding and current row) as moving_avg_salary
+from hr.employees;
+
+-- 25. Find employees whose salary is greater than that of the average of their manager’s team.
+-- Uses a subquery to compare employee salary with manager's team average.
+select e.employee_id, e.manager_id, e.salary
+from hr.employees e
+where e.salary > (select avg(salary) from hr.employees where manager_id = e.manager_id );
 
 
 
