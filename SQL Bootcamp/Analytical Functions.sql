@@ -66,6 +66,29 @@ order by hire_year;
 -- Counts employees for each job role using GROUP BY.
 select job_id, count(*) as total_employees from hr.employees group by job_id;
 
+-- 16. Find the total salary expenditure for each manager's team.
+-- Sums salaries of employees under each manager.
+select d.manager_id, sum(e.salary) as total_team_salary 
+from hr.employees e
+join hr.departments d on e.department_id=d.department_id
+group by d.manager_id, e.department_id
+
+-- 17. Find the highest-paid employee in each department.
+-- Uses RANK() to find the highest-paid employee in each department.
+select department_id, employee_id, salary 
+from (
+    select department_id, employee_id, salary,
+    rank() over (partition by department_id order by salary desc) as salary_rank 
+    from hr.employees
+)
+where salary_rank=1;
+
+-- 18. Calculate the running total of salaries for employees hired in each department.
+-- Uses SUM() OVER() to compute cumulative salary totals.
+select department_id, employee_id, salary, 
+sum(salary) over (partition by department_id order by hire_date) as total_sal
+from hr.employees
+
 
 
 
